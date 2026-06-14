@@ -4,7 +4,7 @@
 	"version": "0.0.1",
 	"license": "MIT",
 	"engines": {
-		"node": "20.17.0"
+		"node": ">=22.12.0"
 	},
 	"packageManager": "pnpm@9.10.0+sha512.73a29afa36a0d092ece5271de5177ecbf8318d454ecd701343131b8ebc0c1a91c487da46ab77c8e596d6acf1461e3594ced4becedf8921b074fbd8653ed7051c",
 	"scripts": {
@@ -13,6 +13,7 @@
 		"start": "astro dev",
 		"build:ci": "pnpm openapi-ts && pnpm astro build",
 		"build": "pnpm astro build",
+		"deploy:workers": "pnpm build && wrangler deploy --config dist/server/wrangler.json",
 		"astro": "astro",
 		"lint": "astro sync && run-s --continue-on-error lint:*",
 		"lint:biome": "biome lint src",
@@ -25,24 +26,24 @@
 		"format:prettier": "prettier . --cache --write --list-different"
 	},
 	"devDependencies": {
-		"@astrojs/check": "0.7.0",
+		"@astrojs/check": "0.9.9",
 		"@biomejs/biome": "^1.4.1",
 		"@hey-api/openapi-ts": "^0.53.0",
-		"@types/node": "^20.10.4",
+		"@types/node": "^22.19.21",
 		"npm-run-all": "^4.1.5",
 		"prettier": "^3.1.1",
 		"prettier-plugin-astro": "^0.12.2",
 		"prettier-plugin-jsdoc": "^1.1.1",
 		"prettier-plugin-tailwindcss": "^0.5.9",
-		"typescript": "^5.3.3",
-		"vite": "^5.4.5",
+		"typescript": "^5.9.3",
+		"vite": "^8.0.16",
 		"vite-plugin-tsconfig-paths": "^1.4.1",
 		"vitest": "^2.1.1"
 	},
 	"dependencies": {
-		"@astrojs/netlify": "^5.5.0",
-		"@astrojs/solid-js": "^4.4.0",
-		"@astrojs/tailwind": "5.1.0",
+		"@astrojs/cloudflare": "^13.7.0",
+		"@astrojs/solid-js": "^6.0.1",
+		"@astrojs/tailwind": "6.0.2",
 		"@fontsource-variable/inter": "5.0.18",
 		"@hey-api/client-fetch": "^0.2.4",
 		"@kobalte/core": "0.13.4",
@@ -53,7 +54,7 @@
 		"@tanstack/solid-query": "^5.52.2",
 		"@tanstack/solid-query-devtools": "^5.52.2",
 		"@total-typescript/ts-reset": "^0.6.1",
-		"astro": "^4.12.2",
+		"astro": "^6.4.6",
 		"astro-icon": "^1.1.1",
 		"solid-icons": "^1.1.0",
 		"solid-js": "^1.8.19",
@@ -62,6 +63,7 @@
 		"tailwindcss": "^3.4.11",
 		"tailwindcss-animate": "^1.0.7",
 		"type-fest": "^4.26.1",
-		"zod": "3.23.8"
+		"wrangler": "^4.100.0",
+		"zod": "4.4.3"
 	}
 }

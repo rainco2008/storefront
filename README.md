@@ -1,111 +1,208 @@
-# Astro Storefront (Alpha)
+# Astro 商城前端模板
 
-Your storefront deserves best-in-class performance without the learning curve.
+这是一个基于 Astro 的商城前端模板，当前目标是先完成可独立部署的前端程序，再逐步接入 Payload CMS 作为后台。
 
-Astro has spent years building the right foundation for content-driven websites, and ecommerce is naturally the next frontier. This repository showcases the top features that our community uses to ship with confidence:
+项目已经配置为优先使用本地 mock 数据，因此不依赖 Payload CMS、原始 Storefront API 或其他后端服务也可以运行和部署。后续接入 Payload 时，只需要在现有的数据客户端边界上替换数据来源。
 
-- [Islands architecture](https://docs.astro.build/en/concepts/islands/) with [SolidJS](https://docs.astro.build/en/guides/integrations-guide/solid-js/) for the smallest possible runtime cost.
-- [On-demand rendering](https://docs.astro.build/en/guides/server-side-rendering/) with CDN caching to deliver pages at the speed of HTML.
-- [`astro:actions`](https://docs.astro.build/en/guides/actions/) to build simple, type-safe endpoints for managing the user's session.
-- [`astro:assets`](https://docs.astro.build/en/guides/images/#image--astroassets) for on-demand image optimization. Backed by Netlify CDN, Sharp, or your favorite image provider.
-- [`astro:env`](https://docs.astro.build/en/reference/configuration-reference/#experimentalenv) for environment variable management and type-safety.
+## 技术栈
 
-Astro Storefront powers [shop.astro.build](https://shop.astro.build) today, and our opinionated choice of services and libraries reflects that. We expect this repository to be the start of a new platform to meet your storefront's needs.
+- Astro `6.4.6`：页面路由、服务端渲染和构建
+- `@astrojs/cloudflare` `13.7.0`：Cloudflare Workers adapter
+- Wrangler `4.100.0`：Cloudflare Workers 部署 CLI
+- SolidJS `1.8.22` + `@astrojs/solid-js` `6.0.1`：购物车抽屉、商品交互等局部交互组件
+- Tailwind CSS `3.4.11` + `@astrojs/tailwind` `6.0.2`：样式系统
+- Astro Actions：购物车会话操作
+- Zod `4.4.3`：表单和 action 输入校验
+- Stripe `16.6.0`：可选支付服务，默认未配置时不会阻塞部署
+- Payload CMS：计划接入的后台系统
 
-## Project structure
+## 当前状态
 
-The primary project directories are outlined below:
+前端默认使用 `src/lib/client.mock.ts` 中的 mock 商品和集合数据。这个配置来自 `tsconfig.json`：
+
+```json
+{
+	"compilerOptions": {
+		"paths": {
+			"storefront:client": ["./src/lib/client.mock.ts"]
+		}
+	}
+}
+```
+
+因此商品列表、集合页、商品详情页和购物车基础功能可以在没有 Payload CMS 的情况下工作。
+
+支付功能默认处于未配置状态。如果没有 Stripe 环境变量，checkout API 会返回 `503`，不会影响站点构建和部署。
+
+## 项目结构
 
 ```sh
-├── public/
+├── public/                  # 静态资源
 ├── src/
-│   └── actions/
-│   └── components/
-│       └── ui/
-│   └── features/
-│   └── pages/
+│   ├── actions/             # Astro Actions
+│   ├── components/          # 通用组件和布局组件
+│   ├── features/            # 商品、集合、购物车等业务模块
+│   ├── lib/                 # 数据客户端、工具函数、类型
+│   ├── pages/               # Astro 文件路由
+│   └── styles.css           # 全局样式
+├── astro.config.ts          # Astro 和 Cloudflare adapter 配置
+├── tsconfig.json            # 路径别名和 TypeScript 配置
+├── wrangler.toml            # Cloudflare Workers 配置
 └── package.json
 ```
 
-`actions/` contains backend functions called from the client to manage a customer's cart. These are called client-side and backed by optimistic updates.
+## 本地开发
 
-`components/ui/` contains reusable components for common UI elements, including Buttons, Drawers, and Inputs. These are tested to meet modern accessibility guidelines.
+安装依赖：
 
-`features/` contains domain-specific components and state management, organized by common ecommerce concepts:
+```sh
+pnpm install
+```
 
-- `product/` - Used on the product landing page (PDP) and recommendation carousels.
-- `collection/` - Used to display product collections with sorting logic.
-- `cart/` - Used to manage the cart flyout and related client-side state.
+启动开发服务器：
 
-`pages/` contains file-based routes for your storefront.
+```sh
+pnpm dev
+```
 
-- `pages/api/` manages customer checkout using Stripe.
-- `pages/orders/` displays the customer's receipt on successful checkout.
-- `pages/collections/` displays product collections with dynamic filtering.
-- `pages/*` displays all other base-level routes.
+生产构建：
 
-## Services
+```sh
+pnpm build
+```
 
-This repository connects to related services to power payments, emails, and map embeds. Visit the [`astro.config.ts`](https://github.com/withastro/storefront/blob/main/astro.config.ts) file for an overview of all environment variables and access permissions required for each.
+类型检查：
 
-You are welcome to change or entirely remove any of these services to meet your needs.
+```sh
+pnpm astro check
+```
 
-### Storefront API
+单元测试：
 
-[shop.astro.build](https://shop.astro.build) uses a custom API to manage products and fulfill orders.
+```sh
+pnpm vitest run
+```
 
-This client isn't available for public use today, though we've provided a "mock" version of all API functions under `src/lib/client.mock.ts`. We recommend using this file as a way to standardize requests for your ecommerce provider of choice.
+## Cloudflare Workers 部署
 
-To use the mock API, update the [`tsconfig.json`](https://github.com/withastro/storefront/blob/main/tsconfig.json) entry for the `storefront:client` module:
+项目已使用 `@astrojs/cloudflare` adapter，并包含 `wrangler.toml`。
+
+一键部署：
+
+[Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/?url=https://github.com/rainco2008/storefront)
+
+本地登录 Cloudflare：
+
+```sh
+pnpm wrangler login
+```
+
+构建并部署到 Cloudflare Workers：
+
+```sh
+pnpm deploy:workers
+```
+
+这个命令会先运行 `pnpm build`，然后使用 Astro 生成的 Workers 配置部署：
+
+```sh
+wrangler deploy --config dist/server/wrangler.json
+```
+
+Cloudflare Workers 推荐配置：
+
+| 配置项 | 值 |
+| --- | --- |
+| Build command | `pnpm build` |
+| Deploy command | `pnpm deploy:workers` |
+| Node.js version | `22.12.0` 或更高 |
+
+如果使用 Cloudflare 控制台或 Git 集成，请确保仓库地址与一键部署链接中的 GitHub URL 一致。
+
+## 环境变量
+
+当前前端不需要任何环境变量即可构建和部署。
+
+启用 Stripe checkout 时需要配置：
+
+| 变量名 | 说明 |
+| --- | --- |
+| `STRIPE_SECRET_KEY` | Stripe 服务端密钥 |
+| `US_SHIPPING_RATE_ID` | Stripe 美国配送费率 ID |
+| `INTERNATIONAL_SHIPPING_RATE_ID` | Stripe 国际配送费率 ID |
+
+启用订单邮件时可配置：
+
+| 变量名 | 说明 |
+| --- | --- |
+| `LOOPS_API_KEY` | Loops API Key |
+| `LOOPS_SHOP_TRANSACTIONAL_ID` | 客户订单确认邮件模板 ID |
+| `LOOPS_FULFILLMENT_TRANSACTIONAL_ID` | 商家履约通知邮件模板 ID |
+| `LOOPS_FULFILLMENT_EMAIL` | 商家接收履约通知的邮箱 |
+
+启用地图展示时可配置：
+
+| 变量名 | 说明 |
+| --- | --- |
+| `GOOGLE_GEOLOCATION_SERVER_KEY` | 服务端 Geolocation API Key |
+| `PUBLIC_GOOGLE_MAPS_BROWSER_KEY` | 浏览器端 Google Maps API Key |
+
+浏览器端可读取的变量必须使用 `PUBLIC_` 前缀，例如：
+
+```sh
+PUBLIC_FATHOM_SITE_ID=xxxx
+PUBLIC_GOOGLE_MAPS_BROWSER_KEY=xxxx
+```
+
+## Payload CMS 接入计划
+
+当前建议保留 `storefront:client` 作为数据访问边界。接入 Payload 时可以新增一个 Payload 客户端，例如：
+
+```sh
+src/lib/client.payload.ts
+```
+
+然后在 `tsconfig.json` 中把 alias 从 mock client 切换到 Payload client：
 
 ```diff
 {
 	"compilerOptions": {
 		"paths": {
-			"~/*": ["./src/*"],
--			"storefront:client": ["./src/lib/client.ts"]
-+			"storefront:client": ["./src/lib/client.mock.ts"]
-		},
+-			"storefront:client": ["./src/lib/client.mock.ts"]
++			"storefront:client": ["./src/lib/client.payload.ts"]
+		}
 	}
 }
 ```
 
-### Stripe
+Payload client 需要实现与 `src/lib/client.mock.ts` 相同的函数接口，例如：
 
-[The Stripe API](https://docs.stripe.com/api) is used to accept payment and manage the checkout flow.
+- `getProducts`
+- `getProductById`
+- `getCollections`
+- `getCollectionById`
+- `createCustomer`
+- `createOrder`
+- `getOrderById`
 
-#### Environment variables
+这样页面、购物车和 checkout 逻辑不需要大范围重写。
 
-- `STRIPE_SECRET_KEY` - A Stripe API key [used to authenticate requests](https://docs.stripe.com/keys).
+## 常用脚本
 
-### Loops
+| 命令 | 说明 |
+| --- | --- |
+| `pnpm dev` | 启动本地开发服务器 |
+| `pnpm build` | 构建生产版本 |
+| `pnpm deploy:workers` | 构建并部署到 Cloudflare Workers |
+| `pnpm astro check` | Astro 类型检查 |
+| `pnpm vitest run` | 运行单元测试 |
+| `pnpm test:e2e` | 运行 Playwright 端到端测试 |
+| `pnpm format` | 格式化代码 |
+| `pnpm lint` | 运行 lint 和类型检查 |
 
-[Loops.so](https://loops.so/) is an email sending service used to send a confirmation email to the customer after checking out successfully.
+## 注意事项
 
-#### Environment variables
-
-- `LOOPS_API_KEY` - A Loops API key [generated through their admin console](https://loops.so/docs/api-reference/intro).
-- `LOOPS_SHOP_TRANSACTIONAL_ID` - The ID of a [Loops transaction email](https://loops.so/docs/transactional/guide) to send to a customer when an order is placed. See `src/lib/emails.ts` for related email template data.
-- `LOOPS_FULFILLMENT_TRANSACTIONAL_ID` - The ID of a [Loops transaction email](https://loops.so/docs/transactional/guide) to send to _you_ (the seller) for order fulfillment. See `src/lib/emails.ts` for related email template data.
-- `LOOPS_FULFILLMENT_EMAIL` - The seller's email address to receive a receipt for fulfillment.
-
-### Google Maps
-
-[The Google Maps Platform](https://developers.google.com/maps) is used to embed a map with the customer's shipping address on the order details page.
-
-#### Environment variables
-
-- `GOOGLE_GEOLOCATION_SERVER_KEY` - A Google API key with permissions to use the Geolocation API. This key is only used server-side and can be [created with an IP address app restriction](https://developers.google.com/maps/api-security-best-practices#restricting-api-keys).
-- `GOOGLE_MAPS_BROWSER_KEY` - A Google API key with permissions to use the "Maps JavaScript API." This key is **publicly available on the client** and must be [created with a Website app restriction](https://developers.google.com/maps/api-security-best-practices#restricting-api-keys) to only allow access from your project's deployment URL.
-
-## Commands
-
-This project uses [pnpm](https://pnpm.io/) to manage dependencies. Be sure to install this tool, then run startup commands from your terminal:
-
-| Command             | Action                                           |
-| :------------------ | :----------------------------------------------- |
-| `pnpm install`      | Installs dependencies                            |
-| `pnpm dev`          | Starts local dev server                          |
-| `pnpm build`        | Build your production site to `./dist/`          |
-| `pnpm astro ...`    | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro --help` | Get help using the Astro CLI                     |
+- 当前商品和集合数据来自 mock 文件，不是 Payload CMS。
+- checkout 支付流程需要 Stripe 变量配置后才可用。
+- 后续接入 Payload 时，优先替换数据客户端，不建议直接在页面组件中写 Payload 请求。
+- Cloudflare Workers 部署时使用 `pnpm deploy:workers`，不要直接部署未构建的源码目录。

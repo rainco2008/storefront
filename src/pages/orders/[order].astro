@@ -1,5 +1,4 @@
 ---
-import { GOOGLE_GEOLOCATION_SERVER_KEY } from 'astro:env/server';
 import { type Address, type LineItem, getOrderById } from 'storefront:client';
 import { z } from 'astro/zod';
 import successIcon from '~/assets/checkout-success-icon.svg';
@@ -11,6 +10,7 @@ import { formatProductPrice } from '~/lib/currency.ts';
 import { unwrap } from '~/lib/util.ts';
 import { productPath } from '~/paths.ts';
 
+const { GOOGLE_GEOLOCATION_SERVER_KEY } = import.meta.env;
 const orderId = unwrap(Astro.params.order, 'order param not found');
 
 const orderResponse = await getOrderById({ path: { id: orderId } });
@@ -48,7 +48,7 @@ async function getGeoLocation(address: Exclude<Address, null>) {
 					.nonempty(),
 			})
 			.parse(await geo.clone().json());
-		return results[0].geometry.location;
+		return results[0]!.geometry.location;
 	} catch (error) {
 		if (geo) {
 			console.error(`Failed to get geo location from shipping address [${geo.status}]`, error);

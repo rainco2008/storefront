@@ -40,7 +40,7 @@ const { address, location } = Astro.props;
 </section>
 
 <script>
-	import { GOOGLE_MAPS_BROWSER_KEY } from 'astro:env/client';
+	const GOOGLE_MAPS_BROWSER_KEY = import.meta.env.PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
 
 	class GoogleMapsWrapper extends HTMLElement {
 		async connectedCallback() {

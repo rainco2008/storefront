@@ -1,5 +1,5 @@
 import { type ActionAPIContext, ActionError, defineAction } from 'astro:actions';
-import { z } from 'astro:schema';
+import { z } from 'zod';
 import { getProducts } from 'storefront:client';
 import { loadCartFromCookies, saveCartToCookies } from '~/features/cart/cart.server.ts';
 import {

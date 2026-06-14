@@ -3,13 +3,17 @@ import Stripe from 'stripe';
 import { z } from 'zod';
 import { loadCartFromCookies } from '~/features/cart/cart.server.ts';
 import type { stripeProductMetadataSchema } from '~/lib/products.ts';
-import {
-	INTERNATIONAL_SHIPPING_RATE_ID,
-	STRIPE_SECRET_KEY,
-	US_SHIPPING_RATE_ID,
-} from 'astro:env/server';
+
+const { INTERNATIONAL_SHIPPING_RATE_ID, STRIPE_SECRET_KEY, US_SHIPPING_RATE_ID } = import.meta.env;
 
 export const POST: APIRoute = async (context) => {
+	if (!STRIPE_SECRET_KEY || !US_SHIPPING_RATE_ID || !INTERNATIONAL_SHIPPING_RATE_ID) {
+		return new Response(
+			'Checkout is not configured. Add STRIPE_SECRET_KEY, US_SHIPPING_RATE_ID, and INTERNATIONAL_SHIPPING_RATE_ID to enable payments.',
+			{ status: 503 },
+		);
+	}
+
 	const cart = await loadCartFromCookies(context.cookies);
 
 	// TODO: we probably want to check here the stock of items/variants

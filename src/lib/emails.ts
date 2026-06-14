@@ -1,12 +1,13 @@
-import {
+import Stripe from 'stripe';
+import { formatProductPrice } from '~/lib/currency.ts';
+import { stripeProductMetadataSchema } from '~/lib/products';
+
+const {
 	LOOPS_API_KEY,
 	LOOPS_FULFILLMENT_EMAIL,
 	LOOPS_FULFILLMENT_TRANSACTIONAL_ID,
 	LOOPS_SHOP_TRANSACTIONAL_ID,
-} from 'astro:env/server';
-import Stripe from 'stripe';
-import { formatProductPrice } from '~/lib/currency.ts';
-import { stripeProductMetadataSchema } from '~/lib/products';
+} = import.meta.env;
 
 export async function sendCheckoutSuccessEmail(
 	email: string,

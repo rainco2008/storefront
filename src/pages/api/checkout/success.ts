@@ -1,4 +1,3 @@
-import { STRIPE_SECRET_KEY } from 'astro:env/server';
 import { createCustomer, createOrder } from 'storefront:client';
 import type { APIRoute } from 'astro';
 import Stripe from 'stripe';
@@ -8,13 +7,19 @@ import { formatOneLineAddress } from '~/lib/address';
 import { sendCheckoutSuccessEmail } from '~/lib/emails.ts';
 import { stripeProductMetadataSchema } from '~/lib/products.ts';
 
-export const GET: APIRoute = async (context) => {
-	const stripe = new Stripe(STRIPE_SECRET_KEY);
+const { STRIPE_SECRET_KEY } = import.meta.env;
 
+export const GET: APIRoute = async (context) => {
 	const sessionId = context.url.searchParams.get('session_id');
 	if (!sessionId) {
 		return new Response('Bad request', { status: 400 });
 	}
+
+	if (!STRIPE_SECRET_KEY) {
+		return new Response('Checkout is not configured.', { status: 503 });
+	}
+
+	const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 	const session = await stripe.checkout.sessions.retrieve(sessionId, {
 		expand: ['line_items', 'line_items.data.price.product'],
